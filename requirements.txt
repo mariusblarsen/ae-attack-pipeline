@@ -1,0 +1,7 @@
+opt-einsum
+gast
+astunparse
+termcolor
+keras_preprocessing
+flatbuffers
+keras
