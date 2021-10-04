@@ -5,3 +5,5 @@ project/
 # Workspace folder
 ## Set up locally for now when running the pipeline
 Tensorflow/
+
+utils/__pycache__/
