@@ -1,0 +1,6 @@
+tqdm
+torch
+torchvision
+scikit-image
+mmcv-full
+mmdet

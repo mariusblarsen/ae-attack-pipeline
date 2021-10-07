@@ -7,3 +7,8 @@ project/
 Tensorflow/
 
 utils/__pycache__/
+*__pycache__/
+
+
+# Large files
+Tianchi04/checkpoints/
