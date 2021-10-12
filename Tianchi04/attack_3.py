@@ -24,6 +24,7 @@ from mmcv.parallel import collate, scatter
 sys.path.append('./mmdetection/')
 from mmdet.datasets.pipelines import Compose
 from mmdet import __version__
+from mmdet.apis import inference_detector
 from mmdet.apis.inference import init_detector, LoadImage
 torch.cuda.set_device(0)
 
@@ -69,9 +70,31 @@ test_pipeline = Compose(test_pipeline)
 
 def get_mask3(image, meta, pixels):
     mask = torch.zeros((1,3,500,500)).cuda()
-    bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
-    bbox = bbox[bbox[:,4]>0.3]
-    num = bbox.shape[0]
+    #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
+    # TODO: Get bbox list fom inference_detector
+    # 1. Convert image from tensor to supported type of inference_detector
+    #print("img type:")
+    #print(image)
+    image = "../images/2.jpg"
+    bboxes = inference_detector(model2, image)
+
+    # bbox = bbox[bbox[:,4]>0.3]
+    # TODO:
+    # Each row with a list can contain lists of each box of label
+    # E.g if 3 bboxes of bicycle is detected, each is represented in the list.
+    # Have to loop through each box and check their confidence.
+    THRESHOLD = 0.3
+    bbox = []
+    for box in bboxes:
+      if box.any():
+        if box[0][4] > THRESHOLD:
+          print(box)
+          bbox.append(box)
+
+    #num = bbox.shape[0]
+    num = len(bbox)
+    print("num:")
+    print(num)
     if num > 10: num = 10
     if num == 0: return mask.float().cuda()
     lp = int(pixels / (1*num))
@@ -86,7 +109,8 @@ def get_mask3(image, meta, pixels):
         #area = (int(bbox[i,2])-int(bbox[i,0]))+(int(bbox[i,3])-int(bbox[i,1]))
         #lp = int(area/(tarea*3)*pixels)            
 
-        xc = int((bbox[i,0]+bbox[i,2])/2)
+        # TODO: Calculate x and y center from list.
+        xc = int((bbox[i,0]+bbox[i,2])/2) 
         yc = int((bbox[i,1]+bbox[i,3])/2)
 
         w = int(bbox[i,2]-bbox[i,0])
