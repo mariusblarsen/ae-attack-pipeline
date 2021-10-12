@@ -25,7 +25,7 @@ sys.path.append('./mmdetection/')
 from mmdet.datasets.pipelines import Compose
 from mmdet import __version__
 from mmdet.apis.inference import init_detector, LoadImage
-#torch.cuda.set_device(0)
+torch.cuda.set_device(0)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=1, help='number of epochs to train for')

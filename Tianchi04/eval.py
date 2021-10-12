@@ -24,7 +24,7 @@ def count_detection_score_yolov4(selected_path, json_name, output_dir):
     weightfile = "checkpoints/yolov4.weights"
     darknet_model = Darknet(cfgfile)
     darknet_model.load_weights(weightfile)
-    darknet_model = darknet_model.eval()#.cuda()
+    darknet_model = darknet_model.eval().cuda()
 
     files = os.listdir(selected_path)
     files.sort()
@@ -78,8 +78,8 @@ def count_connected_domin_score(max_total_area_rate, selected_path, max_patch_nu
         img0 = Image.open(img_path0).convert('RGB')
         img_path1 = os.path.join(selected_path, img_name)
         img1 = Image.open(img_path1).convert('RGB')
-        img0_t = resize2(img0)#.cuda()
-        img1_t = resize2(img1)#.cuda()
+        img0_t = resize2(img0).cuda()
+        img1_t = resize2(img1).cuda()
         img_minus_t = img0_t - img1_t
 
         connected_domin_score, total_area_rate, patch_number = \
@@ -105,10 +105,8 @@ def count_connected_domin_score(max_total_area_rate, selected_path, max_patch_nu
 def connected_domin_detect_and_score(input_img, max_total_area_rate, max_patch_number):
     # detection
     input_img_new = (input_img[0]+input_img[1]+input_img[2])
-    #ones = torch.cuda.FloatTensor(input_img_new.size()).fill_(1)
-    ones = torch.FloatTensor(input_img_new.size()).fill_(1)
-    #zeros = torch.cuda.FloatTensor(input_img_new.size()).fill_(0)
-    zeros = torch.FloatTensor(input_img_new.size()).fill_(0)
+    ones = torch.cuda.FloatTensor(input_img_new.size()).fill_(1)
+    zeros = torch.cuda.FloatTensor(input_img_new.size()).fill_(0)
 
     whole_size = input_img_new.shape[0]*input_img_new.shape[1]
     input_map_new = torch.where((input_img_new != 0), ones, zeros)
@@ -168,7 +166,7 @@ if __name__ == '__main__':
     whitebox_fasterrcnn_result = 'whitebox_fasterrcnn_overall_score.json'
     count_detection_score_fasterrcnn(selected_path, bb_json_name, output_dir)    
     compute_overall_score(cd_json_name, bb_json_name, output_dir, whitebox_fasterrcnn_result)
-    #torch.cuda.empty_cache()    
+    torch.cuda.empty_cache()    
     
 
 

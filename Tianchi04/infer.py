@@ -11,8 +11,7 @@ from mmdet.apis import init_detector, inference_detector
 
 def infer(config, checkpoint, img_file_dir, output_dir, json_name='bbox_score.json', show_score_thr=0.3):
 
-    #model = init_detector(config, checkpoint, device='cuda:0')
-    model = init_detector(config, checkpoint)
+    model = init_detector(config, checkpoint, device='cuda:0')
     img_dir = img_file_dir
     file_name_list = os.listdir(img_dir)
     file_name_list.sort()
@@ -35,10 +34,10 @@ def infer(config, checkpoint, img_file_dir, output_dir, json_name='bbox_score.js
             result_c = bbox_results
         result_above_confidence_num_p = 0
         result_above_confidence_num_c = 0
-        '''
+        
         result_p = np.concatenate(result_p)
         result_c = np.concatenate(result_c)
-        '''
+        
         #for ir in range(len(result_p)):
         for ir in range(result_p.shape[0]):
             if result_p[ir, 4] > show_score_thr:
