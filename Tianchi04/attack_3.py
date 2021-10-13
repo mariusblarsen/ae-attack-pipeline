@@ -70,15 +70,13 @@ test_pipeline = Compose(test_pipeline)
 
 def get_mask3(image, meta, pixels):
     mask = torch.zeros((1,3,500,500)).cuda()
-    #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
     # TODO: Get bbox list fom inference_detector
     # 1. Convert image from tensor to supported type of inference_detector
-    #print("img type:")
-    #print(image)
-    image = "../images/2.jpg"
-    bboxes = inference_detector(model2, image)
+    image = "../images/2.jpg" 
 
-    # bbox = bbox[bbox[:,4]>0.3]
+    #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
+    bboxes = inference_detector(model2, image)
+        
     # TODO:
     # Each row with a list can contain lists of each box of label
     # E.g if 3 bboxes of bicycle is detected, each is represented in the list.
@@ -107,14 +105,19 @@ def get_mask3(image, meta, pixels):
     y_off = np.random.randint(-20,20)
     for i in range(num):
         #area = (int(bbox[i,2])-int(bbox[i,0]))+(int(bbox[i,3])-int(bbox[i,1]))
-        #lp = int(area/(tarea*3)*pixels)            
+        #lp = int(area/(tarea*3)*pixels)  
+        bot_x = bbox[i][0]
+        bot_y = bbox[i][1]
+        top_x = bbox[i][2]
+        top_y = bbox[i][3]
 
-        # TODO: Calculate x and y center from list.
-        xc = int((bbox[i,0]+bbox[i,2])/2) 
-        yc = int((bbox[i,1]+bbox[i,3])/2)
+        xc = int((bot_x + top_x)/2) 
+        yc = int((bot_y + top_y)/2)
 
-        w = int(bbox[i,2]-bbox[i,0])
-        h = int(bbox[i,3]-bbox[i,1])
+        #w = int(bbox[i,2]-bbox[i,0])
+        w = int(top_x - bot_x)
+        #h = int(bbox[i,3]-bbox[i,1])
+        h = int(top_y - bot_y)
         lw = int(w/(w+h)*lp)
         lh = int(h/(w+h)*lp)
         x1 = max(0, xc-lh//2)
