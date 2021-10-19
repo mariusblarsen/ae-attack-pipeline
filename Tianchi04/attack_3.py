@@ -77,6 +77,7 @@ def get_mask3(image, meta, pixels):
 
     #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
     bboxes = inference_detector(model2, image)
+    bboxes = [b for b in bboxes if b.any()]
         
     # TODO:
     # Each row with a list can contain lists of each box of label
@@ -85,11 +86,11 @@ def get_mask3(image, meta, pixels):
     THRESHOLD = 0.3
     bbox = []
     for box in bboxes:
-        if len(box[0] > 1):
+        if len(box[0]) > 1:
             for i in range(len(box[0])):
                 if box[i][4] > THRESHOLD:
                     bbox.append(box[i])
-        elif box.any():
+        else:
             if box[0][4] > THRESHOLD:
                 print(box)
                 bbox.append(box)
@@ -141,16 +142,17 @@ def get_mask4(image, meta, pixels):
     image = "../images/2.png" 
     
     bboxes = inference_detector(model2, image)
+    bboxes = [b for b in bboxes if b.any()]
     #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
     #bbox = bbox[bbox[:,4]>0.3]
     THRESHOLD = 0.3
     bbox = []
     for box in bboxes:
-        if len(box[0] > 1):
+        if len(box[0]) > 1:
             for i in range(len(box[0])):
                 if box[i][4] > THRESHOLD:
                     bbox.append(box[i])
-        elif box.any():
+        else:
             if box[0][4] > THRESHOLD:
                 print(box)
                 bbox.append(box)
