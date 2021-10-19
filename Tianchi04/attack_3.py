@@ -69,10 +69,11 @@ test_pipeline = Compose(test_pipeline)
 #print(test_pipeline)
 
 def get_mask3(image, meta, pixels):
-    mask = torch.zeros((1,3,500,500)).cuda()
+    size = 500
+    mask = torch.zeros((1,3,size,size)).cuda()
     # TODO: Get bbox list fom inference_detector
     # 1. Convert image from tensor to supported type of inference_detector
-    image = "../images/2.jpg" 
+    image = "../images/2.png" 
 
     #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
     bboxes = inference_detector(model2, image)
@@ -84,12 +85,15 @@ def get_mask3(image, meta, pixels):
     THRESHOLD = 0.3
     bbox = []
     for box in bboxes:
-      if box.any():
-        if box[0][4] > THRESHOLD:
-          print(box)
-          bbox.append(box)
+        if len(box[0] > 1):
+            for i in range(len(box[0])):
+                if box[i][4] > THRESHOLD:
+                    bbox.append(box[i])
+        elif box.any():
+            if box[0][4] > THRESHOLD:
+                print(box)
+                bbox.append(box)
 
-    #num = bbox.shape[0]
     num = len(bbox)
     print("num:")
     print(num)
@@ -106,24 +110,22 @@ def get_mask3(image, meta, pixels):
     for i in range(num):
         #area = (int(bbox[i,2])-int(bbox[i,0]))+(int(bbox[i,3])-int(bbox[i,1]))
         #lp = int(area/(tarea*3)*pixels)  
-        bot_x = bbox[i][0]
-        bot_y = bbox[i][1]
-        top_x = bbox[i][2]
-        top_y = bbox[i][3]
+        bot_x = bbox[i][0][0]
+        bot_y = bbox[i][0][1]
+        top_x = bbox[i][0][2]
+        top_y = bbox[i][0][3]
 
         xc = int((bot_x + top_x)/2) 
         yc = int((bot_y + top_y)/2)
 
-        #w = int(bbox[i,2]-bbox[i,0])
         w = int(top_x - bot_x)
-        #h = int(bbox[i,3]-bbox[i,1])
         h = int(top_y - bot_y)
         lw = int(w/(w+h)*lp)
         lh = int(h/(w+h)*lp)
         x1 = max(0, xc-lh//2)
-        x2 = min(xc+lh//2, 500)
+        x2 = min(xc+lh//2, size)
         y1 = max(0, yc-lw//2)
-        y2 = min(yc+lw//2, 500)
+        y2 = min(yc+lw//2, size)
         mask[:,:,yc-1:yc,x1:x2] = 1
         mask[:,:,y1:y2,xc-1:xc] = 1
     mask = mask.float().cuda()    
@@ -131,10 +133,29 @@ def get_mask3(image, meta, pixels):
     return mask
 
 def get_mask4(image, meta, pixels):
-    mask = torch.zeros((1,3,500,500)).cuda()
-    bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
-    bbox = bbox[bbox[:,4]>0.3]
-    num = bbox.shape[0]
+    size = 500
+    mask = torch.zeros((1,3,size,size)).cuda()
+    
+    # TODO: Get bbox list fom inference_detector
+    # 1. Convert image from tensor to supported type of inference_detector
+    image = "../images/2.png" 
+    
+    bboxes = inference_detector(model2, image)
+    #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
+    #bbox = bbox[bbox[:,4]>0.3]
+    THRESHOLD = 0.3
+    bbox = []
+    for box in bboxes:
+        if len(box[0] > 1):
+            for i in range(len(box[0])):
+                if box[i][4] > THRESHOLD:
+                    bbox.append(box[i])
+        elif box.any():
+            if box[0][4] > THRESHOLD:
+                print(box)
+                bbox.append(box)
+    
+    num = len(bbox)
     if num > 10: num = 10
     if num == 0: return mask.float().cuda()
     lp = int(pixels / (1*num))
@@ -147,32 +168,52 @@ def get_mask4(image, meta, pixels):
     y_off = np.random.randint(-20,20)    
     for i in range(num):
         #area = (int(bbox[i,2])-int(bbox[i,0]))+(int(bbox[i,3])-int(bbox[i,1]))
-        #lp = int(area/(tarea*3)*pixels)            
+        #lp = int(area/(tarea*3)*pixels)     
+        bot_x = bbox[i][0][0]
+        bot_y = bbox[i][0][1]
+        top_x = bbox[i][0][2]
+        top_y = bbox[i][0][3]       
 
-        xc = int((bbox[i,0]+bbox[i,2])/2)
-        yc = int((bbox[i,1]+bbox[i,3])/2)
-
-        if label[i] !=0:
-            xc = int((bbox[i,0]+bbox[i,2])/4)
-            yc = int((bbox[i,1]+bbox[i,3])/4) 
-
-        w = int(bbox[i,2]-bbox[i,0])
-        h = int(bbox[i,3]-bbox[i,1])
+        #xc = int((bbox[i,0]+bbox[i,2])/2)
+        #yc = int((bbox[i,1]+bbox[i,3])/2)
+        xc = int((bot_x + top_x)/2) 
+        yc = int((bot_y + top_y)/2)
+        
+        # TODO: How to get label
+        #if label[i] !=0:
+        #    xc = int((bot_x + top_x)/4) 
+        #    yc = int((bot_y + top_y)/4)
+            #xc = int((bbox[i,0]+bbox[i,2])/4)
+            #yc = int((bbox[i,1]+bbox[i,3])/4) 
+        w = int(top_x - bot_x)
+        h = int(top_y - bot_y)
         lw = int(w/(w+h)*lp)
         lh = int(h/(w+h)*lp)
         x1 = max(0, xc-lw//2)
-        x2 = min(xc+lw//2, 500)
+        x2 = min(xc+lw//2, size)
         y1 = max(0, yc-lh//2)
-        y2 = min(yc+lh//2, 500)
+        y2 = min(yc+lh//2, size)
         mask[:,:,yc-1:yc,x1:x2] = 1
         mask[:,:,y1:y2,xc-1:xc] = 1
     mask = mask.float().cuda()    
 
     return mask
 
+def convert_model_output(out, cuda=True):
+	out_ = []
+	for j in range(len(out[0])):
+		if len(out[0][j]) > 1:
+			out_.append([out[0][j][0]])
+		elif len(out[0][j]) > 0:
+			out_.append(out[0][j])
+	out_ = torch.tensor(out_)
+	if cuda:
+		return out_.cuda()
+	return out_
 
 files = os.listdir('../images')
 files.sort()
+
 #files = files[100:101]
 #files = ['891.png']   
 count = 0
@@ -237,12 +278,20 @@ for file in files:
         ImgNor = nor(Img2.squeeze(0))
         data['img'] = [ImgNor.unsqueeze(0)]
         out2 = model2(return_loss=False, rescale=True, img=data['img'], img_metas=data['img_metas'])
-        #print(len(prop))
-        #print(prop[0].shape)
+        out2_ = []
+
+        for j in range(len(out2[0])):
+          if len(out2[0][j]) > 1:
+            out2_.append([out2[0][j][0]])
+          elif len(out2[0][j]) > 0:
+            out2_.append(out2[0][j])
+
         loss1 = torch.max(out1[1])
-        loss2 = torch.max(out2[0][:,4])
-        
+
+        out2_ = torch.tensor(out2_).cuda()
+        loss2 = torch.max(out2_)
         loss = loss1 + loss2
+
         print('Num:{:4d}, Iter:{:4d}, Loss:{:.4f}, LossYOLO:{:.4f}, LossFRCNN:{:.4f}'.format(count, i, loss.item(), loss1.item(), loss2.item()))
         if loss1.item() < 0.45 and loss2.item() < 0.26:
             flag = 1
@@ -273,9 +322,18 @@ for file in files:
             ImgNor = nor(Img2.squeeze(0))
             data['img'] = [ImgNor.unsqueeze(0)]
             out2 = model2(return_loss=False, rescale=True, img=data['img'], img_metas=data['img_metas'])
-                    
+
+            out2_ = []
+
+            for j in range(len(out2[0])):
+              if len(out2[0][j]) > 1:
+                out2_.append([out2[0][j][0]])
+              elif len(out2[0][j]) > 0:
+                out2_.append(out2[0][j])
+
+            out2_ = torch.tensor(out2_).cuda()
             loss1 = torch.max(out1[1])
-            loss2 = torch.max(out2[0][:,4])
+            loss2 = torch.max(out2_)
             
             loss = loss1 + loss2
             print('REmask==Num:{:4d}, Iter:{:4d}, Loss:{:.4f}, LossYOLO:{:.4f}, LossFRCNN:{:.4f}'.format(count, i, loss.item(), loss1.item(), loss2.item()))
@@ -312,11 +370,15 @@ for file in files:
             ImgNor = nor(Img2.squeeze(0))
             data['img'] = [ImgNor.unsqueeze(0)]
             out2 = model2(return_loss=False, rescale=True, img=data['img'], img_metas=data['img_metas'])
-                    
+            out2 = convert_model_output(out2)
+
+            print("out2:")
+            print(out2)
+
             loss1 = torch.max(out1[1])
-            loss4 = torch.mean(out2[0][:,4])
-            loss3 = torch.sum(out2[0][:,4]>0.3)
-            loss2 = torch.max(out2[0][:,4])
+            loss4 = torch.mean(out2)
+            loss3 = torch.sum(out2>0.3)
+            loss2 = torch.max(out2)
             
             loss = loss1 + loss4
             print('Num:{:4d}, Iter:{:4d}, Loss:{:.4f}, LossYOLO:{:.4f}, LossFRCNN:{:.4f}, BoxNum:{:.2f}'.format(count, i, loss.item(), loss1.item(), loss2.item(), loss3.item()))
