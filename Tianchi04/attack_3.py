@@ -79,7 +79,6 @@ def parse_bboxes(bboxes, THRESHOLD=0.3):
 
 def get_mask3(image, meta, pixels):
     mask = torch.zeros((1,3,500,500)).cuda()
-
     #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
     bboxes = inference_detector(model2, image)
     bboxes = [b for b in bboxes if b.any()]
@@ -125,7 +124,18 @@ def get_mask3(image, meta, pixels):
 
 def get_mask4(image, meta, pixels):
     mask = torch.zeros((1,3,500,500)).cuda()
-    
+    """
+    # TODO: Test sized image
+    width = 512
+    height = 512
+
+    img = cv2.imread(image)
+    sized = cv2.resize(img, (width, height))
+    sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
+    bbox = do_detect(model2, sized, 0.4, 0.6, True) 
+    print(bbox)
+    print("bbox")
+    """
     bboxes = inference_detector(model2, image)
     bboxes = [b for b in bboxes if b.any()]
     #bbox, label = model2(return_loss=False, rescale=True, img=image, img_metas=meta)
@@ -191,8 +201,9 @@ def convert_model_output(out, cuda=True):
 files = os.listdir('../images')
 files.sort()
 
+#files = ['1.jpg']   
 #files = files[100:101]
-#files = ['891.png']   
+
 count = 0
 shape1 = 0
 shape2 = 0
