@@ -105,7 +105,6 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
             boxes (list): List og bounding boxes [x1, y1, x2, y2, _, conf, class_id]
     """
     import cv2
-    print("tool.utils.plot_boxes_cv2")
     img = np.copy(img)
     colors = np.array([[1, 0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 1, 0], [1, 0, 0]], dtype=np.float32)
 
@@ -141,7 +140,7 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
             blue = get_color(0, offset, classes)
             if color is None:
                 rgb = (red, green, blue)
-            class_text = class_names[cls_id] + str(cls_conf*100) + "%"
+            class_text = class_names[cls_id] + "{:.1f}".format(cls_conf*100) + "%"
             img = cv2.putText(img, class_text, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1.2, rgb, 1)
         img = cv2.rectangle(img, (x1, y1), (x2, y2), rgb, 1)
     if savename:
