@@ -393,6 +393,7 @@ def load_class_names(namesfile):
 
 
 def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
+    print("utils.utils.do_detect")
     model.eval()
     t0 = time.time()
 
